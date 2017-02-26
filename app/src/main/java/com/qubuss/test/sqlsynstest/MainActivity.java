@@ -1,6 +1,9 @@
 package com.qubuss.test.sqlsynstest;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
@@ -32,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView.LayoutManager layoutManager;
     RecyclerAdapter recyclerAdapter;
     ArrayList<Contact> arrayList = new ArrayList<>();
+    BroadcastReceiver broadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +45,12 @@ public class MainActivity extends AppCompatActivity {
 
         readFromLocalStorage();
 
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                readFromLocalStorage();
+            }
+        };
 
     }
     private void init(){
@@ -129,8 +139,6 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-
-
     }
 
     public boolean checkNetworkConnsection(){
@@ -147,5 +155,17 @@ public class MainActivity extends AppCompatActivity {
         readFromLocalStorage();
         dbHelper.close();
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        registerReceiver(broadcastReceiver, new IntentFilter(DbContract.UI_UPDATE_BROADCAST));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(broadcastReceiver);
     }
 }
